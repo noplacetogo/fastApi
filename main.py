@@ -27,7 +27,7 @@ def sqlSearch():
                 cursor.execute(command)
                 result = cursor.fetchall()
                 cursor.close()
-                conn.close()
+                
                 return  result
     except Exception as ex:
       # 錯誤回報
