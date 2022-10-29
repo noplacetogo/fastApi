@@ -9,19 +9,19 @@ app = FastAPI()
 def read_root():
     return {"Hello": "World"}
 
-
-@app.get('/sqlSearch')
-def sqlSearch():
-    db_settings = {
+db_settings = {
             "host": "192.46.224.179",
             "port": 3306,
             "user": "root",
             "password": "ikok1987",
             "db": 'shop',
             "charset": "utf8"
-    }
+}
+conn = pymysql.connect(**db_settings)
+
+@app.get('/sqlSearch')
+def sqlSearch():
     try:       # 建立連線
-        conn = pymysql.connect(**db_settings)
         with conn.cursor() as cursor:
                 command = 'SELECT * FROM product;'
                 cursor.execute(command)
