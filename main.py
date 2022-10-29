@@ -22,6 +22,7 @@ conn = pymysql.connect(**db_settings)
 @app.get('/sqlSearch')
 def sqlSearch():
     try:       # 建立連線
+        conn.ping()
         with conn.cursor() as cursor:
                 command = 'SELECT * FROM product;'
                 cursor.execute(command)
