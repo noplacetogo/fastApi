@@ -1,5 +1,10 @@
+import pymysql
+import collections
+import aiomysql
+
 class SQL:
-  async def __init__(self):
+  @classmethod
+  async def connect(cls):
     db_settings = {
         "host": "192.46.224.179",
         "port": 3306,
@@ -12,31 +17,35 @@ class SQL:
   
   # Rapid API 
   # get,update,delete
-  async def get(self, pool, table):
+  @classmethod
+  async def get(cls, pool, table):
     columns = db.getColumns(table)
     queryStr = "SELECT * FROM {}".format(table)
-    res = collections.deque(list(await self.querySQL(pool, queryStr, 'select')))
+    res = collections.deque(list(await cls().querySQL(pool, queryStr, 'select')))
     res.appendleft(columns)
     return list(res)
 
-  async def update(self, table, *argv):
+  @classmethod
+  async def update(cls, table, *argv):
     queryKey = ','.join(list(argv[0].keys()))
     queryValue = ','.join(["'{}'".format(i) for i in list(argv[0].values())])
     querySet = ','.join(["{}='{}'".format(i[0], i[1]) for i in list(argv[0].items())])
     queryStr = "INSERT INTO {} ({}) VALUES ({}) on DUPLICATE KEY UPDATE {};".format(table, queryKey, queryValue, querySet)
-    await self.querySQL(pool, queryStr, 'shop', 'commit')
+    await cls().querySQL(pool, queryStr, 'shop', 'commit')
 
-  async def delete(self, table, *argv):
+  @classmethod
+  async def delete(cls, table, *argv):
     self.conn.ping()
     queryWhere = "{}='{}'".format(*list(argv[0].items())[0])
     queryStr = "DELETE FROM {} WHERE {} ".format(table, queryWhere)
-    await self.querySQL(pool, queryStr, 'shop', 'commit')
+    await cls().querySQL(pool, queryStr, 'shop', 'commit')
 
   # Complex API
   # search
+  @classmethod
   async def query(self, table, command):
     columns = tuple(command.split('SELECT')[1].split('FROM')[0].replace(' ','').split(','))
-    res = collections.deque(list(await self.querySQL(pool, command, 'select')))
+    res = collections.deque(list(await cls().querySQL(pool, command, 'select')))
     res.appendleft(columns)
     return list(res)  
       
