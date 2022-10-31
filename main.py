@@ -11,7 +11,7 @@ async  def _startup():
 
 @app.get("/aioGetData")
 async  def aioGetData():
-   return await sql.SQL.get(app.state.pool,'product')
+   return await sql.SQL.get(app.state.pool,'test')
 
 
 @app.get("/getData")
