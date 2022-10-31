@@ -6,8 +6,9 @@ class SQL:
   @classmethod
   async def connect(cls):
     db_settings = {
-        "host": "192.46.224.179",
-        "port": 3306,
+#         "host": "192.46.224.179",
+#         "port": 3306,
+        "unix_socket": "/var/run/mysqld/mysqld.sock",
         "user": "root",
         "password": "ikok1987",
         "db": 'shop',
