@@ -19,7 +19,7 @@ class SQL:
   # get,update,delete
   @classmethod
   async def get(cls, pool, table):
-    columns = db.getColumns(table)
+    columns = DB.getColumns(table)
     queryStr = "SELECT * FROM {}".format(table)
     res = collections.deque(list(await cls().querySQL(pool, queryStr, 'select')))
     res.appendleft(columns)
