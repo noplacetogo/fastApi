@@ -344,6 +344,11 @@ class DB:
         print(query)
         cls().querySQL(query, 'shop', 'commit')
 
+    @classmethod
+    def get(cls):
+      query = 'SELECT * FROM product'
+      return cls().query(query,'shop','search)
+      
     def querySQL(self, query, database, type='commit'):
         global conn
         # 資料庫設定
