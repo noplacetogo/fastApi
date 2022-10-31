@@ -347,7 +347,7 @@ class DB:
     @classmethod
     def get(cls):
       query = 'SELECT * FROM product'
-      return cls().query(query,'shop','search')
+      return cls().querySQL(query,'shop','search')
       
     def querySQL(self, query, database, type='commit'):
         global conn
