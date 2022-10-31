@@ -11,4 +11,4 @@ async  def _startup():
 
 @app.get("/getData")
 async  def getData():
-   return await sql.SQL.(app.state.pool,'product')
+   return await sql.SQL(app.state.pool,'product')
