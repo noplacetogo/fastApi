@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-import mysql as sql
+from modules.CRUD import SQL
 
 app = FastAPI()
 
@@ -7,13 +7,13 @@ app = FastAPI()
 
 @app.on_event("startup")
 async  def _startup():
-   app.state.pool  = await sql.SQL.connect()
+   app.state.pool  = await SQL.connect()
 
 @app.get("/aioGetData")
 async  def aioGetData():
-   return await sql.SQL.get(app.state.pool,'test')
+   return await SQL.get(app.state.pool,'test')
 
 
 @app.get("/getData")
 def getData():
-   return sql.DB.get()
+   return SQL.get('product')
