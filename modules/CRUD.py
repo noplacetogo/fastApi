@@ -1,7 +1,7 @@
 import pymysql
 import collections
 import aiomysql
-from ..config import settings
+from .config import settings
 
 class SQL:
   @classmethod
