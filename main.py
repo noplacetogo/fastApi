@@ -14,6 +14,4 @@ async  def aioGetData():
    return await SQL.get(app.state.pool,'test')
 
 
-@app.get("/getData")
-def getData():
-   return SQL.get('product')
+
