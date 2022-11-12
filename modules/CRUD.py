@@ -1,19 +1,21 @@
+import sys
 import pymysql
 import collections
 import aiomysql
-from .config import settings
+from config import settings
+sys.path.append('..')
 
 class SQL:
   @classmethod
   async def connect(cls):
     db_settings = {
-#         "host": "192.46.224.179",
-#         "port": 3306,
-        "unix_socket": settings.unix_socket,
-        "user": settings.user,
-        "password": settings.password,
-        "db": settings.db,
-        "charset": settings.charset,
+        "host": settings.DB.host,
+        "port": settings.DB.port,
+        # "unix_socket": settings.DB.unix_socket,
+        "user": settings.DB.user,
+        "password": settings.DB.password,
+        "db": settings.DB.db,
+        "charset": settings.DB.charset,
     }
     return await aiomysql.create_pool(**db_settings)
   
@@ -28,29 +30,28 @@ class SQL:
     return list(res)
 
   @classmethod
-  async def update(cls, table, *argv):
+  async def update(cls, pool, table, *argv):
     queryKey = ','.join(list(argv[0].keys()))
     queryValue = ','.join(["'{}'".format(i) for i in list(argv[0].values())])
     querySet = ','.join(["{}='{}'".format(i[0], i[1]) for i in list(argv[0].items())])
     queryStr = "INSERT INTO {} ({}) VALUES ({}) on DUPLICATE KEY UPDATE {};".format(table, queryKey, queryValue, querySet)
-    await cls().querySQL(pool, queryStr, 'shop', 'commit')
+    print(queryStr)
+    await cls().querySQL(pool, queryStr, 'commit')
 
   @classmethod
-  async def delete(cls, table, *argv):
-    self.conn.ping()
+  async def delete(cls, pool,table, *argv):
     queryWhere = "{}='{}'".format(*list(argv[0].items())[0])
     queryStr = "DELETE FROM {} WHERE {} ".format(table, queryWhere)
-    await cls().querySQL(pool, queryStr, 'shop', 'commit')
+    await cls().querySQL(pool, queryStr, 'commit')
 
   # Complex API
   # search
   @classmethod
-  async def query(self, table, command):
+  async def query(cls, pool, table, command):
     columns = tuple(command.split('SELECT')[1].split('FROM')[0].replace(' ','').split(','))
     res = collections.deque(list(await cls().querySQL(pool, command, 'select')))
     res.appendleft(columns)
     return list(res)  
-      
 
 
   async def querySQL(self, pool, command, type='commit'):
@@ -58,9 +59,10 @@ class SQL:
       async with conn.cursor() as cur:
         await cur.execute(command)
         if type == 'commit':
-          conn.commit()
+            await conn.commit()
         else:
-          return await cur.fetchall()
+            return await cur.fetchall()
+
 
 class DB:
     def __init__(self):
@@ -226,7 +228,6 @@ class DB:
                 'user_level': 'VARCHAR(32)',
                 'user_comment': 'TEXT',
             },
-
             'staff': {
                 'table_name': 'staff',
                 'id': 'int auto_increment primary key',
