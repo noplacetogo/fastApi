@@ -5,7 +5,7 @@ from fastapi import APIRouter, UploadFile, Request
 from fastapi.responses import HTMLResponse
 from typing import List
 from PIL import Image
-from modules.tools import getUUID
+from modules.TOOLS import getUUID
 from config import settings
 sys.path.append('..')
 router = APIRouter()
@@ -21,7 +21,7 @@ def allowed_file_mime_type(content_type):
 
 
 @router.post("/", tags=['upload'])
-async def create_upload_file(request: Request, files: List[UploadFile]):
+async def upload_file(request: Request, files: List[UploadFile]):
     filenames = []
     for file in files:
         # 基礎驗證
