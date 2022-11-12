@@ -27,13 +27,15 @@ async def aioGetData():
 
 @app.get('/sendEmail', tags=['測試用'])
 async def sendEmail(background_tasks: BackgroundTasks):
-    background_tasks.add_task(EMAIL.send, message="some notification")
+    # EMAIL.send()
+    background_tasks.add_task(EMAIL.send)
     return '1|OK'
+
 
 @app.get('/sendSMS', tags=['測試用'])
 async def sendSMS(background_tasks: BackgroundTasks):
-    SMS.send()
-    # background_tasks.add_task(SMS.send, message="some notification")
+    # SMS.send()
+    background_tasks.add_task(SMS.send)
     return '1|OK'
 
 @app.get("/", tags=['學習用'])

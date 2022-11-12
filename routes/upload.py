@@ -20,7 +20,7 @@ def allowed_file_mime_type(content_type):
     return content_type in settings.ALLOWED_EXTENSIONS_MIME_TYPES
 
 
-@router.post("/", tags=['upload'])
+@router.post("/", tags=['UPLOAD'])
 async def upload_file(request: Request, files: List[UploadFile]):
     filenames = []
     for file in files:
@@ -49,7 +49,7 @@ async def upload_file(request: Request, files: List[UploadFile]):
     return filenames
 
 
-@router.get("/", tags=['upload'])
+@router.get("/", tags=['UPLOAD'])
 async def main():
     content = """
         <form action="/upload/" enctype="multipart/form-data" method="post">
