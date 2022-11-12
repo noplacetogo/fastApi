@@ -2,7 +2,11 @@ import uuid
 import hashlib
 from urllib.parse import quote_plus
 from config import  settings
+import uuid
+from datetime import datetime
 import collections
+
+
 # dict ->dict
 # {"apple":"3" => apple='3'}
 def parse_params_to_sql(params: dict) -> str:
@@ -38,3 +42,12 @@ def get_mac_value(get_request_form):
     check_mac_value = hashlib.sha256(
         encoding_str.encode('utf-8')).hexdigest().upper()
     return check_mac_value
+
+
+def get_token(prefix=''):
+  temp = str(uuid.uuid4())
+  token = temp.replace('-', '')
+  now = datetime.now()
+  nowStr = now.strftime('%y%m%d%H%M%S')
+  restNumber = 20 - (len(prefix) + len(nowStr))
+  return prefix + now.strftime('%y%m%d%H%M%S') + token[0:restNumber]

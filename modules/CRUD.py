@@ -357,7 +357,6 @@ class DB:
         try:
             # 建立Connection物件
             conn = pymysql.connect(**db_settings)
-            print(conn)
         except Exception as ex:
             print(ex)
         with conn.cursor() as cursor:
@@ -375,3 +374,4 @@ class DB:
                 cursor.close()
                 conn.close()
                 return result
+

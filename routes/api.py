@@ -26,4 +26,5 @@ async def postData(request: Request, table: str):
         payload.update(await request.json())
     except Exception as e:
         pass
-    return await SQL.update(request.app.state.pool, table, payload)
+    await SQL.update(request.app.state.pool, table, payload)
+    return "1|OK"

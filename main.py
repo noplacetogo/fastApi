@@ -11,6 +11,10 @@ app = FastAPI()
 app.include_router(routers.router)
 app.add_middleware(MyMiddleware, some_attribute="some_attribute_here_if_needed")
 
+# 單元測試意外用
+import sys, asyncio
+if sys.platform == "win32" and (3, 8, 0) <= sys.version_info < (3, 9, 0):
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 #啟動mysql
 @app.on_event("startup")
 async def _startup():
@@ -23,6 +27,10 @@ async def aioGetData():
         測試mysql 運作正常
     """
     return await SQL.get(app.state.pool, 'test')
+
+@app.get('/')
+def index():
+    return {"msg":"Hello world"}
 
 
 @app.get('/sendEmail', tags=['測試用'])

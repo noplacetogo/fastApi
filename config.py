@@ -2,7 +2,7 @@ from pydantic import BaseModel, BaseSettings
 
 
 class DB(BaseModel):
-    host = "192.46.224.179"
+    host = "139.162.11.227"
     port = 3306
     unix_socket = "/var/run/mysqld/mysqld.sock"
     user = "root"
