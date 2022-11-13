@@ -11,10 +11,7 @@ app = FastAPI()
 app.include_router(routers.router)
 app.add_middleware(MyMiddleware, some_attribute="some_attribute_here_if_needed")
 
-# 單元測試意外用
-import sys, asyncio
-if sys.platform == "win32" and (3, 8, 0) <= sys.version_info < (3, 9, 0):
-    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 #啟動mysql
 @app.on_event("startup")
 async def _startup():
@@ -26,25 +23,12 @@ async def aioGetData():
     """
         測試mysql 運作正常
     """
-    return await SQL.get(app.state.pool, 'test')
+    return await SQL.get(app.state.pool, 'product')
 
 @app.get('/')
 def index():
     return {"msg":"Hello world"}
 
-
-@app.get('/sendEmail', tags=['測試用'])
-async def sendEmail(background_tasks: BackgroundTasks):
-    # EMAIL.send()
-    background_tasks.add_task(EMAIL.send)
-    return '1|OK'
-
-
-@app.get('/sendSMS', tags=['測試用'])
-async def sendSMS(background_tasks: BackgroundTasks):
-    # SMS.send()
-    background_tasks.add_task(SMS.send)
-    return '1|OK'
 
 @app.get("/", tags=['學習用'])
 async def user(*,
@@ -62,6 +46,7 @@ async def getHeader(user_agent: Union[str, None] = Header(default=None)):
 @app.get('/content', tags=['學習用'])
 async def getContent(request: Request):
     return request.headers
+
 # Depend
 # Query 較驗
 # Field、Query、Body、PATH

@@ -1,7 +1,7 @@
 import sys
 import shutil
 import aiofiles
-from fastapi import APIRouter, UploadFile, Request
+from fastapi import APIRouter, UploadFile, Request, HTTPException
 from fastapi.responses import HTMLResponse
 from typing import List
 from PIL import Image
@@ -25,20 +25,22 @@ async def upload_file(request: Request, files: List[UploadFile]):
     filenames = []
     for file in files:
         # 基礎驗證
+
         if not file:
-            return {"message": "不被允許的檔案類型"}
+            raise HTTPException(status_code=401, detail='不被允許的檔案類型1')
         if file.filename == '':
-            return {"message": "不被允許的檔案類型"}
+            raise HTTPException(status_code=401, detail='不被允許的檔案類型2')
         if not allowed_file(file.filename):
-            return {"message": "不被允許的檔案類型"}
+            raise HTTPException(status_code=401, detail='不被允許的檔案類型3')
+        print(file)
         if not allowed_file_mime_type(file.content_type):
-            return {"message": "不被允許的檔案類型"}
+            raise HTTPException(status_code=401, detail='是不被允許的檔案類型4')
         # 存入資料夾
         uuid = getUUID()
         async with aiofiles.open(settings.UPLOAD_FOLDER + uuid, 'wb') as out_file:
             content = await file.read()  # async read
             if len(content) >= settings.MAX_UPLOAD_SIZE:
-                return {"message": "檔案不得超過5MB"}
+                raise HTTPException(status_code=401, detail='檔案不得超過5MB')
             # 依類型不同存入
             if file.filename in ['jpeg', 'png', 'jpg']:
                 webpimg = Image.open(content)

@@ -37,7 +37,7 @@ class PAYMENT(BaseModel):
         'HashIV': 'EkRm7iFT261dpevs',
         'action_url': 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5'
     }
-
+    exec = test
 class Settings(BaseSettings):
     #   APP 設定
     app_name: str = "SHOP API"

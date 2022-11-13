@@ -35,7 +35,6 @@ class SQL:
     queryValue = ','.join(["'{}'".format(i) for i in list(argv[0].values())])
     querySet = ','.join(["{}='{}'".format(i[0], i[1]) for i in list(argv[0].items())])
     queryStr = "INSERT INTO {} ({}) VALUES ({}) on DUPLICATE KEY UPDATE {};".format(table, queryKey, queryValue, querySet)
-    print(queryStr)
     await cls().querySQL(pool, queryStr, 'commit')
 
   @classmethod
@@ -49,6 +48,8 @@ class SQL:
   @classmethod
   async def query(cls, pool, table, command):
     columns = tuple(command.split('SELECT')[1].split('FROM')[0].replace(' ','').split(','))
+    if columns[0] == '*':
+      columns = DB.getColumns(table)
     res = collections.deque(list(await cls().querySQL(pool, command, 'select')))
     res.appendleft(columns)
     return list(res)  
@@ -312,7 +313,7 @@ class DB:
     @classmethod
     def getColumns(cls, table_name):
       table = cls().table[table_name]
-      return tuple(list(table.keys())[2:])
+      return tuple(list(table.keys())[1:])
     
     @classmethod
     def truncate(cls, table):
