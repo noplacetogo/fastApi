@@ -1,7 +1,10 @@
+import sys, os
+sys.path.append(os.path.abspath(os.path.join('..', 'config')))
+
 import pymysql
 import collections
 import aiomysql
-from .config import settings
+from config import settings
 
 class SQL:
   @classmethod
@@ -9,12 +12,13 @@ class SQL:
     db_settings = {
 #         "host": "192.46.224.179",
 #         "port": 3306,
-        "unix_socket": settings.unix_socket,
-        "user": settings.user,
-        "password": settings.password,
-        "db": settings.db,
-        "charset": settings.charset,
+        "unix_socket": settings.DB.unix_socket,
+        "user": settings.DB.user,
+        "password": settings.DB.password,
+        "db": settings.DB.db,
+        "charset": settings.DB.charset,
     }
+
     return await aiomysql.create_pool(**db_settings)
   
   # Rapid API 
