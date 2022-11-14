@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from routes import api, upload, line, payment, email, sms
+from routes import api, upload, line, payment, email, sms, logistic
 
 router = APIRouter()
 
@@ -27,6 +27,11 @@ router.include_router(
 router.include_router(
     sms.router,
     prefix="/sms"
+)
+
+router.include_router(
+    logistic.router,
+    prefix="/logistic"
 )
 
 router.include_router(

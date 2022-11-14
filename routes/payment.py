@@ -1,9 +1,9 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from typing import  List, Union
 from modules.CRUD import SQL
-from modules.TOOLS import parse_params_to_sql, get_token
+from modules.TOOLS import parse_params_to_sql, get_token, get_mac_value, payload_
 from config import settings
 import importlib.util
 import os
@@ -18,11 +18,6 @@ sys.path.append('..')
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-
-@router.get("/", response_class=HTMLResponse, tags=['PAYMENT'])
-async def index(request: Request):
-    return templates.TemplateResponse("dealPage.html", {"request": request})
 
 
 def to_ecpay(cart=None):
@@ -64,15 +59,15 @@ def to_ecpay(cart=None):
         'CustomField4': '',
         'EncryptType': 1,
     }
-    ecpay_payment_sdk = module.ECPayPaymentSdk(MerchantID=settings.PAYMENT.exec.dict()['MerchantID'],
-                                               HashKey=settings.PAYMENT.exec.dict()['HashKey'],
-                                               HashIV=settings.PAYMENT.exec.dict()['HashIV'])
+    ecpay_payment_sdk = module.ECPayPaymentSdk(MerchantID=settings.PAYMENT.dict()['exec']['MerchantID'],
+                                               HashKey=settings.PAYMENT.dict()['exec']['HashKey'],
+                                               HashIV=settings.PAYMENT.dict()['exec']['HashIV'])
     try:
         # 產生綠界訂單所需參數
         final_order_params = ecpay_payment_sdk.create_order(order_params)
 
         # 產生 html 的 form 格式
-        action_url = settings.PAYMENT.exec.dict()['action_url']
+        action_url = settings.PAYMENT.dict()['exec']['action_url']
         html = ecpay_payment_sdk.gen_html_post_form(action_url,
                                                     final_order_params)
         return html
@@ -80,7 +75,24 @@ def to_ecpay(cart=None):
         print('An exception happened: ' + str(error))
 
 
-@router.post('/to_ecpay_test', response_class=HTMLResponse, tags=['PAYMENT'])
-async def to_ecpay_text(request: Request):
+@router.get('/to_ecpay_test', response_class=HTMLResponse, tags=['PAYMENT'], summary="測試金流")
+async def to_ecpay_test(request: Request):
     return to_ecpay()
 
+
+@router.post('/receive_result', tags=['PAYMENT'], summary="金流回傳資料")
+async def receive_result(payload: dict = Depends(payload_)):
+    """
+    自綠界後台接收資訊
+    :param payload:[]
+    :return: html
+    """
+    print(payload)
+    return '1|OK'
+
+
+@router.post('/trad_result', tags=['PAYMENT'], summary="金流頁面重定向個人網頁")
+async def trad_result(request: Request, payload: dict = Depends(payload_)):
+    if get_mac_value(payload) != payload['CheckMacValue']:
+        return '請聯繫管理員'
+    return templates.TemplateResponse("trade_res.html", {"request": request})

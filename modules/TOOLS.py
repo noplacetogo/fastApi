@@ -1,5 +1,6 @@
 import uuid
 import hashlib
+from fastapi import Request
 from urllib.parse import quote_plus
 from config import  settings
 import uuid
@@ -51,3 +52,13 @@ def get_token(prefix=''):
   nowStr = now.strftime('%y%m%d%H%M%S')
   restNumber = 20 - (len(prefix) + len(nowStr))
   return prefix + now.strftime('%y%m%d%H%M%S') + token[0:restNumber]
+
+
+async def payload_(request: Request):
+    _payload = dict(await request.form())
+    try:
+        _payload.update(await request.json())
+    except Exception as e:
+        pass
+    return _payload
+

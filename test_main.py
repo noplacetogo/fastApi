@@ -60,6 +60,8 @@ class SMS:
 
     def post(self):
         return requests.post(self.page, json={'detail': '測試電話中...'})
+
+
 class LINE:
     # LINE 必須行駛於SSL上
     def __init__(self):
@@ -70,6 +72,14 @@ class LINE:
 
     def push_message(self, user_id='Ub2b8849b4fd349622259537eb21f6b8c', send_type='MSG', msg={'MSG': '測試中'}):
         return requests.post(f'{self.page}broadcast/{user_id}/{send_type}', json=msg)
+
+
+class PAYMENT:
+    def __init__(self):
+        self.page = base_url + 'payment/'
+
+    def to_ecpay(self):
+        return requests.get(self.page + 'to_ecpay_test')
 @_recorder.record(file_path="out.toml")
 def main():
     # print(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -98,6 +108,11 @@ def main():
     # line = LINE()
     # assert line.broadcast().status_code == 200
     # assert line.push_message().status_code == 200
+
+    # 測試payment
+    payment = PAYMENT()
+    assert payment.to_ecpay().status_code == 200
     return None
 
 main()
+

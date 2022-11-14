@@ -1,8 +1,7 @@
 from fastapi import FastAPI, Path, Body, Query, Request, BackgroundTasks, Header, Depends
 from typing import Union, Set, List
 from modules.CRUD import SQL
-from modules.EMAIL import EMAIL
-from modules.SMS import SMS
+from modules.TOOLS import payload_
 from pydantic import BaseModel, Field, HttpUrl
 import routers
 import uvicorn
@@ -25,16 +24,10 @@ async def aioGetData():
     """
     return await SQL.get(app.state.pool, 'product')
 
+
 @app.get('/')
 def index():
-    return {"msg":"Hello world"}
-
-
-@app.get("/", tags=['學習用'])
-async def user(*,
-    user_id: int = Query(..., title="The ID of the user to get", gt=0)):
-    return {'Hello': user_id}
-
+    return {"msg": "Hello world"}
 
 # Header
 @app.get("/getHeader/", tags=['學習用'])
@@ -54,19 +47,6 @@ async def getContent(request: Request):
 # describe
 # min_length, max_length, 正則表達式
 # gt, ge, lt, le
-async def user_reflect(user_id: Union[str, None] = Query(default=None, max_length=50)):
-    return user_id
-
-
-@app.get('/getUser', tags=['學習用'])
-async def getUser(new_user_id: str=Depends(user_reflect)):
-    return new_user_id
-
-
-# PATH
-@app.get('/getID/{id}',  tags=['學習用'])
-async def getID(*, id: int= Path(title='ING', gt=0)):
-    return id
 
 
 # BaseModel

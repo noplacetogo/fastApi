@@ -1,14 +1,14 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from modules.CRUD import SQL
-from modules.TOOLS import parse_params_to_sql
+from modules.TOOLS import parse_params_to_sql, payload_
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
 
-@router.get("/{table}", tags=["API"])
-async def getData(request: Request, table: str) -> tuple:
+@router.get("/{table}", tags=["API"], summary="取得資料", description="可分為依參數取得部分資料或一次取得所有資料")
+async def get_data(request: Request, table: str) -> tuple:
     if not request.query_params:
         json_compatible_item_data = jsonable_encoder(await SQL.get(request.app.state.pool, table))
         return JSONResponse(content=json_compatible_item_data)
@@ -20,15 +20,7 @@ async def getData(request: Request, table: str) -> tuple:
         return JSONResponse(content=json_compatible_item_data)
 
 
-@router.post("/{table}", tags=["API"])
-async def postData(request: Request, table: str):
-    """
-        POST 可接收JSON, FORM資料
-    """
-    payload = dict(await request.form())
-    try:
-        payload.update(await request.json())
-    except Exception as e:
-        pass
+@router.post("/{table}", tags=["API"], summary="新增、更新資料", description="可同時APPEND&UPDATE")
+async def post_data(request: Request, table: str, payload: dict = Depends(payload_)):
     await SQL.update(request.app.state.pool, table, payload)
     return "1|OK"

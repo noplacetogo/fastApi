@@ -38,6 +38,22 @@ class PAYMENT(BaseModel):
         'action_url': 'https://payment-stage.ecpay.com.tw/Cashier/AioCheckOut/V5'
     }
     exec = test
+
+
+class LOGISTIC(BaseModel):
+    official = {
+
+    }
+    test = {
+        'MerchantID': '2000933',
+        'HashKey': 'XBERn1YOvpM9nfZc',
+        'HashIV': 'h1ONHk4P4yqbl5LK',
+        'action_url': 'https://logistics-stage.ecpay.com.tw/Express/map'
+    }
+
+    exec = test
+
+
 class Settings(BaseSettings):
     #   APP 設定
     app_name: str = "SHOP API"
@@ -52,6 +68,8 @@ class Settings(BaseSettings):
     LINE: LINE = LINE()
     #   PAYMENT 設定
     PAYMENT: PAYMENT = PAYMENT()
+    #   LOGISTIC 設定
+    LOGISTIC: LOGISTIC = LOGISTIC()
     #   upload 設定
     UPLOAD_FOLDER: str = './upload/'  # '/var/www/upload'
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp', 'html', 'json'}
