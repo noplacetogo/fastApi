@@ -48,7 +48,9 @@ class LOGISTIC(BaseModel):
         'MerchantID': '2000933',
         'HashKey': 'XBERn1YOvpM9nfZc',
         'HashIV': 'h1ONHk4P4yqbl5LK',
-        'action_url': 'https://logistics-stage.ecpay.com.tw/Express/map'
+        'action_url': 'https://logistics-stage.ecpay.com.tw/Express/',
+        'search_action_url': 'https://logistics-stage.ecpay.com.tw/Helper/QueryLogisticsTradeInfo/V2',
+        'print_action_url': 'https://logistics-stage.ecpay.com.tw/helper/printTradeDocument'
     }
 
     exec = test

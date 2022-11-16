@@ -22,22 +22,23 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.post('/map', tags=['LOGISTIC'], summary="重定向綠界地圖")
-async def map(payload: dict = Depends(payload_)):
+async def map(request: Request, payload: dict = Depends(payload_)):
     """
     :param payload:['subType','returnUrl','frontUrl','device']
     :return: html
     """
+    host_name = str(request.url).replace(request.url.path, '') + '/logistic/'
     cvs_map_params = {
         "MerchantTradeNo": "anyno",
         "LogisticsType": "CVS",
         # 若申請類型為 B2C，只能串參數為 FAMI、UNIMART、HILIFE
         # 若申請類型為 C2C，只能串參數為 FAMIC2C、UNIMARTC2C、HILIFEC2C
-        "LogisticsSubType": payload['subType'],
+        "LogisticsSubType": payload.get('subType','FAMIC2C'),
         "IsCollection": "N",
         # "ServerReplyURL": host_name + "logistic/map_result",
-        "ServerReplyURL": payload['returnUrl'],
-        "ExtraData": payload['frontUrl'],
-        "Device": module.Device[payload['device']],
+        "ServerReplyURL": payload.get('returnUrl', host_name + "map_result"),
+        "ExtraData": payload.get('frontUrl','https://lovesusu.tw/'),
+        "Device": module.Device[payload.get('device','MOBILE')],
     }
 
     # 建立實體
@@ -49,18 +50,23 @@ async def map(payload: dict = Depends(payload_)):
     try:
         # 產生綠界物流訂單所需參數
         final_params = ecpay_logistic_sdk.cvs_map(cvs_map_params)
-        html = ecpay_logistic_sdk.gen_html_post_form(settings.LOGISTIC.dict()['exec']['action_url'], final_params)
+        html = ecpay_logistic_sdk.gen_html_post_form(settings.LOGISTIC.dict()['exec']['action_url'] + 'map', final_params)
         return html
     except Exception as error:
         print('An exception happened: ' + str(error))
 
+@router.get('/map_test', response_class=HTMLResponse, tags=['LOGISTIC'], summary="綠界測試地圖")
+async def map_test(html: str=Depends(map)):
+    return html
 
 @router.post('/map_result', tags=['LOGISTIC'], summary="綠界地圖回傳")
 async def map_result(payload: dict = Depends(payload_)):
     front_url = payload['ExtraData'] + '?' + 'CVSStoreID=' +\
                 payload['CVSStoreID'] + '&CVSStoreName=' + payload['CVSStoreName'] +\
                 '&CVSAddress=' + payload['CVSAddress']
-    return RedirectResponse(front_url)
+    print(front_url)
+    # return RedirectResponse(front_url)
+    return front_url
 
 
 @router.post("/create_shipping_order_C2C/{MerchantTradeNo}", tags=['LOGISTIC'], summary="新增物流")
@@ -100,7 +106,7 @@ async def create_shipping_order_c2c(payload: dict = Depends(payload_)):
     )
     try:
         reply_result = ecpay_logistic_sdk.create_shipping_order(
-            action_url=settings.LOGISTIC.dict()['exec']['action_url'],
+            action_url=settings.LOGISTIC.dict()['exec']['action_url'] + "Create",
             client_parameters=create_shipping_order_params)
         return reply_result
     except Exception as error:
@@ -121,7 +127,7 @@ async def search_shipping_order_c2c(logistics_id: str):
     )
     try:
         reply_result = ecpay_logistic_sdk.query_logistics_info(
-            action_url=settings.LOGISTIC.dict()['exec']['action_url'],
+            action_url=settings.LOGISTIC.dict()['exec']['search_action_url'],
             client_parameters=query_logistics_info_params)
         return reply_result
     except Exception as error:
@@ -134,7 +140,8 @@ async def receive_result(payload: dict = Depends(payload_)):
     return '1|OK'
 
 
-@router.get('/print_trade_doc/{logistics_id}', tags=['LOGISTIC'], summary="列印託運單")
+# 尚未更新
+@router.get('/print_trade_doc/{logistics_id}', response_class=HTMLResponse, tags=['LOGISTIC'], summary="列印託運單")
 def print_trade_doc(logistics_id: str):
     print_trade_doc_params = {
         'AllPayLogisticsID': logistics_id,
@@ -149,12 +156,15 @@ def print_trade_doc(logistics_id: str):
     )
     try:
         # 產生綠界物流訂單所需參數
+
         final_params = ecpay_logistic_sdk.print_trade_doc(
             client_parameters=print_trade_doc_params)
+        print(final_params)
         html = ecpay_logistic_sdk.gen_html_post_form(
-            action_url=settings.LOGISTIC.dict()['exec']['action_url'],
+            action_url=settings.LOGISTIC.dict()['exec']['print_action_url'],
             client_parameters=final_params)
-        return html
+        print(html)
+        return "html"
     except Exception as error:
         raise HTTPException(status_code=400, detail=error)
 

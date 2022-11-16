@@ -27,8 +27,8 @@ def get_mac_value(get_request_form):
         params.pop('CheckMacValue')
     ordered_params = collections.OrderedDict(
         sorted(params.items(), key=lambda k: k[0].lower()))
-    HahKy = settings.PAYMENT.test.dict()['HashKey']
-    HashIV = settings.PAYMENT.test.dict()['HashIV']
+    HahKy = settings.PAYMENT.dict()['exec']['HashKey']
+    HashIV = settings.PAYMENT.dict()['exec']['HashIV']
     encoding_lst = []
     encoding_lst.append('HashKey=%s&' % HahKy)
     encoding_lst.append(''.join([
@@ -55,8 +55,9 @@ def get_token(prefix=''):
 
 
 async def payload_(request: Request):
-    _payload = dict(await request.form())
+    _payload = {}
     try:
+        _payload = dict(await request.form())
         _payload.update(await request.json())
     except Exception as e:
         pass

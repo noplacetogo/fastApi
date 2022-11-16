@@ -20,7 +20,8 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-def to_ecpay(cart=None):
+def to_ecpay(request: Request, cart=None):
+
     # 處理基本資料
     # total_product_price = [i['price']*i['quantity'] for i in carts]
     # total_product_name = [f"{i['product_name']}{str(i['price'])}元x{str(i['quantity'])}" for i in carts]
@@ -32,7 +33,8 @@ def to_ecpay(cart=None):
                 'order_name': '康熙來了',
                 'order_time': '2022/06/12 12:00:00'
                 }
-    host_name = "https://lovesusu.tw/shop/"
+
+    host_name = str(request.url).replace(request.url.path, '') + '/payment/'
 
     order_params = {
         'MerchantTradeNo':  cart['order_number'],
@@ -42,12 +44,12 @@ def to_ecpay(cart=None):
         'TotalAmount': cart['total_product_price'],
         'TradeDesc': 'ToolsFactory',
         'ItemName': cart['total_product_name'],
-        'ReturnURL': host_name + 'payment/receive_result',
+        'ReturnURL': host_name + 'receive_result',
         'ChoosePayment': 'Credit',
-        'ClientBackURL': host_name + 'payment/trad_result',
+        'ClientBackURL': host_name + 'trad_result',
         'Remark': '交易備註',
         'ChooseSubPayment': '',
-        'OrderResultURL': host_name + 'payment/trad_result',
+        'OrderResultURL': host_name + 'trad_result',
         'NeedExtraPaidInfo': 'Y',
         'DeviceSource': '',
         'IgnorePayment': '',
@@ -76,8 +78,8 @@ def to_ecpay(cart=None):
 
 
 @router.get('/to_ecpay_test', response_class=HTMLResponse, tags=['PAYMENT'], summary="測試金流")
-async def to_ecpay_test(request: Request):
-    return to_ecpay()
+async def to_ecpay_test(html: str = Depends(to_ecpay)):
+    return html
 
 
 @router.post('/receive_result', tags=['PAYMENT'], summary="金流回傳資料")
@@ -95,4 +97,4 @@ async def receive_result(payload: dict = Depends(payload_)):
 async def trad_result(request: Request, payload: dict = Depends(payload_)):
     if get_mac_value(payload) != payload['CheckMacValue']:
         return '請聯繫管理員'
-    return templates.TemplateResponse("trade_res.html", {"request": request})
+    return templates.TemplateResponse("trade_res.html", {"request": request, "target_dict": payload})
