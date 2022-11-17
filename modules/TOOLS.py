@@ -6,12 +6,13 @@ from config import  settings
 import uuid
 from datetime import datetime
 import collections
+import re
 
 
 # dict ->dict
-# {"apple":"3" => apple='3'}
-def parse_params_to_sql(params: dict) -> str:
-    return "&".join([f"{i}='{params[i]}'" for i in params])
+async def parse_params_to_sql(params: dict) -> str:
+    regex = "(^[A-Za-z0-9_@]+$)"
+    return "&".join([f"{i}='{params[i]}'" for i in params if (re.findall(regex, i).length !=0) and (re.findall(regex, params[i]).length !=0]))
 
 
 # create uuid
@@ -21,7 +22,7 @@ def getUUID() -> str:
 
 
 # 驗證綠界傳送的 check_mac_value 值是否正確
-def get_mac_value(get_request_form):
+def get_mac_value(get_request_form) -> str:
     params = dict(get_request_form)
     if params.get('CheckMacValue'):
         params.pop('CheckMacValue')
@@ -45,7 +46,7 @@ def get_mac_value(get_request_form):
     return check_mac_value
 
 
-def get_token(prefix=''):
+def get_token(prefix='') -> str:
   temp = str(uuid.uuid4())
   token = temp.replace('-', '')
   now = datetime.now()
@@ -54,7 +55,7 @@ def get_token(prefix=''):
   return prefix + now.strftime('%y%m%d%H%M%S') + token[0:restNumber]
 
 
-async def payload_(request: Request):
+async def payload_(request: Request) -> dict:
     _payload = {}
     try:
         _payload = dict(await request.form())
@@ -63,7 +64,7 @@ async def payload_(request: Request):
         pass
     return _payload
 
-async def googleRecaptcha(payload: dict = Depands(payload_))
+async def googleRecaptcha(payload: dict = Depands(payload_)) -> payload
     token = payload.get('gr','')
     if token == '':
         raise HTTPException(status_code=401, detail='gr token ERROR')
