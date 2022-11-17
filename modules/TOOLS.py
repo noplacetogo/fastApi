@@ -1,6 +1,6 @@
 import uuid
 import hashlib
-from fastapi import Request, HTTPException, Depan
+from fastapi import Request, HTTPException, Depends
 from urllib.parse import quote_plus
 from config import  settings
 import uuid
@@ -10,21 +10,22 @@ import re
 
 
 
-def dict_protect_sql(data: dict) -> dict:
+def dict_protect_sql(params: dict) -> dict:
     regex = "(^[A-Za-z0-9_@]+$)"
-    for key, values in payload.items():
+    print(params)
+    for key, values in params.items():
       if len(re.findall(regex, key)) == 0:
          raise HTTPException(status_code=401, detail='參數錯誤!')
       elif len(re.findall(regex, str(values))) == 0:
+         print('參數錯誤')
          raise HTTPException(status_code=401, detail='參數錯誤!')
-      else:
-        return data
+    return params
 
     
 
 # dict ->dict
 def parse_params_to_sql(params: dict = Depends(dict_protect_sql)) -> str:
-    return "&".join([f"{i}='{params[i]}'" for i in params]))
+    return "&".join([f"{i}='{params[i]}'" for i in params])
 
 
 # create uuid
@@ -76,7 +77,7 @@ async def payload_(request: Request) -> dict:
         pass
     return dict_protect_sql(_payload)
 
-async def googleRecaptcha(payload: dict = Depands(payload_)) -> payload
+async def googleRecaptcha(payload: dict = Depends(payload_)):
     token = payload.get('gr','')
     if token == '':
         raise HTTPException(status_code=401, detail='gr token ERROR')
