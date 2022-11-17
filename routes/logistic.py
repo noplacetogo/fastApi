@@ -156,15 +156,12 @@ def print_trade_doc(logistics_id: str):
     )
     try:
         # 產生綠界物流訂單所需參數
-
         final_params = ecpay_logistic_sdk.print_trade_doc(
             client_parameters=print_trade_doc_params)
-        print(final_params)
         html = ecpay_logistic_sdk.gen_html_post_form(
-            action_url=settings.LOGISTIC.dict()['exec']['print_action_url'],
-            client_parameters=final_params)
-        print(html)
-        return "html"
+            settings.LOGISTIC.dict()['exec']['print_action_url'],
+            final_params)
+        return html
     except Exception as error:
         raise HTTPException(status_code=400, detail=error)
 
