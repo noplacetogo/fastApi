@@ -1,6 +1,6 @@
 import uuid
 import hashlib
-from fastapi import Request, HTTPException, Depends
+from fastapi import Request, HTTPException, Depends, Header
 from urllib.parse import quote_plus
 from config import  settings
 import uuid
@@ -78,9 +78,10 @@ async def payload_(request: Request) -> dict:
     return dict_protect_sql(_payload)
 
 
-async def google_recaptcha(request: Request):
-    payload = payload_(request)
-    token = payload.get('gr', '')
+async def google_recaptcha(request: Request, gr: str = Header()):
+    if gr == '':
+        raise HTTPException(status_code=401, detail="gr token invaild")
+    token = gr
     if token == '':
         raise HTTPException(status_code=401, detail='gr token ERROR')
     googleUrl = 'https://www.google.com/recaptcha/api/siteverify'
@@ -93,8 +94,9 @@ async def google_recaptcha(request: Request):
         raise HTTPException(status_code=401, detail='gr token request Error')
     with r.json() as res:
         if res.score >= 0.5:
-            payload.pop('gr')
-            return payload
+            return payload_(request)
         else:
             raise HTTPException(status_code=401, detail='gr token bot')
+
+
 

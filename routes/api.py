@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 router = APIRouter()
 
 
-@router.get("/{table}", tags=["API"], summary="取得資料", description="可分為依參數取得部分資料或一次取得所有資料")
+@router.get("/{table}", tags=["API"], summary="內部取得資料", description="供內部使用可分為依參數取得部分資料或一次取得所有資料")
 async def get_data(request: Request, table: str) -> tuple:
     if not request.query_params:
         json_compatible_item_data = jsonable_encoder(await SQL.get(request.app.state.pool, table))

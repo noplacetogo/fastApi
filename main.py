@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Path, Body, Query, Request, BackgroundTasks, Header, Depends
+from fastapi import FastAPI, Path, Body, Query, Request, BackgroundTasks, Header, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 
 from typing import Union, Set, List
@@ -22,14 +22,12 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="member/token")
 
+
 #啟動mysql
 @app.on_event("startup")
 async def _startup():
     app.state.pool = await SQL.connect()
 
-@app.get('/items/')
-async def get_items(token:str = Depends(oauth2_scheme)):
-    return {'token': token}
 
 @app.get("/aioGetData", tags=['測試用'], summary='測試aiomysql')
 @limiter.limit("5/minute")
@@ -83,10 +81,6 @@ class User(BaseModel):
 async def update_item(item_id: int, item: Item, user: User, importance: int = Body(gt=0)):
     results = {"item_id": item_id, "item": item, "user": user}
     return item
-
-@app.get("/aioGetData/{table}")
-async  def aioGetData(table: str):
-   return await SQL.get(app.state.pool, table)
 
 
 if __name__ == "__main__":

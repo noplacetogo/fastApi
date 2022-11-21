@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Union
-
+from modules.TOOLS import payload_
 from fastapi import Depends, APIRouter, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
@@ -17,10 +17,11 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
 
 fake_users_db = {
-    "johndoe": {
-        "user_id": "001"
-        "username": "johndoe",
-        "hashed_password": "$2b$12$EixZaYVK1fsbw1ZfbX3OXePaWxn96p36WQoeG6Lruj3vjPGga31lW",
+    "ai4g6wu0": {
+        "user_id": "001",
+        "username": "ai4g6wu0",
+        "scope": "api:product:GET:ALL",
+        "hashed_password": "$2b$12$mhmZ/vuS3A7III4OyyLOZu6B81HC8hobfkeOh7LHh6TKT04igmXWy",
         "disabled": False,
     }
 }
@@ -33,10 +34,13 @@ class Token(BaseModel):
 
 class TokenData(BaseModel):
     username: Union[str, None] = None
+    scope: Union[str, None] = None
 
 
 class User(BaseModel):
     username: str
+    user_id: str
+    scope: Union[str, None] = None
     disabled: Union[bool, None] = None
 
 
@@ -46,7 +50,7 @@ class UserInDB(User):
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="member/token")
 
 
 
@@ -93,6 +97,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
+
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -110,9 +115,10 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     return current_user
 
 
-@router.post("/token", response_model=Token)
+@router.post("/token", response_model=Token, tags=['MEMBER'], summary="登入取得token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -121,13 +127,19 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username}, expires_delta=access_token_expires
+        data={"sub": user.username, 'scope': user.scope}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
 
+# 新增用戶
+@router.post("/", tags=['MEMBER'], summary="新增用戶")
+async def create_member(payload: dict = Depends(payload_)):
+    return get_password_hash(payload["password"])
 
-@router.get("/users/me/", response_model=User)
+
+
+@router.get("/users/info/", response_model=User, tags=['MEMBER'], summary="登入資訊")
 async def read_users_me(current_user: User = Depends(get_current_active_user)):
     return current_user
 
