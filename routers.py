@@ -1,5 +1,8 @@
 from fastapi import APIRouter
-from routes import api, upload, line, payment, email, sms, logistic
+from routes import api, upload, line, \
+    payment, email, sms, logistic, \
+    member
+
 
 router = APIRouter()
 
@@ -37,4 +40,9 @@ router.include_router(
 router.include_router(
     payment.router,
     prefix="/payment"
+)
+
+router.include_router(
+    member.router,
+    prefix="/member"
 )

@@ -4,6 +4,7 @@ from fastapi import Request, HTTPException, Depends
 from urllib.parse import quote_plus
 from config import  settings
 import uuid
+import requests
 from datetime import datetime
 import collections
 import re
@@ -12,7 +13,6 @@ import re
 
 def dict_protect_sql(params: dict) -> dict:
     regex = "(^[A-Za-z0-9_@]+$)"
-    print(params)
     for key, values in params.items():
       if len(re.findall(regex, key)) == 0:
          raise HTTPException(status_code=401, detail='參數錯誤!')
@@ -21,10 +21,10 @@ def dict_protect_sql(params: dict) -> dict:
          raise HTTPException(status_code=401, detail='參數錯誤!')
     return params
 
-    
 
 # dict ->dict
-def parse_params_to_sql(params: dict = Depends(dict_protect_sql)) -> str:
+def parse_params_to_sql(params: dict) -> str:
+    params = dict_protect_sql(params)
     return "&".join([f"{i}='{params[i]}'" for i in params])
 
 
@@ -77,8 +77,10 @@ async def payload_(request: Request) -> dict:
         pass
     return dict_protect_sql(_payload)
 
-async def googleRecaptcha(payload: dict = Depends(payload_)):
-    token = payload.get('gr','')
+
+async def google_recaptcha(request: Request):
+    payload = payload_(request)
+    token = payload.get('gr', '')
     if token == '':
         raise HTTPException(status_code=401, detail='gr token ERROR')
     googleUrl = 'https://www.google.com/recaptcha/api/siteverify'

@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Path, Body, Query, Request, BackgroundTasks, Header, Depends
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+
 from typing import Union, Set, List
 from modules.CRUD import SQL
-from modules.TOOLS import payload_
 from pydantic import BaseModel, Field, HttpUrl
 import routers
 import uvicorn
@@ -19,13 +20,16 @@ app.add_middleware(MyMiddleware, some_attribute="some_attribute_here_if_needed")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="member/token")
 
 #啟動mysql
 @app.on_event("startup")
 async def _startup():
     app.state.pool = await SQL.connect()
 
-
+@app.get('/items/')
+async def get_items(token:str = Depends(oauth2_scheme)):
+    return {'token': token}
 
 @app.get("/aioGetData", tags=['測試用'], summary='測試aiomysql')
 @limiter.limit("5/minute")

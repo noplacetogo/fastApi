@@ -210,7 +210,6 @@ class DB:
             # 以下尚未處理           
             # 'member_token': {
             #     'table_name': 'member_token',
-            #     'id': 'int auto_increment primary key',
             #     'user_id': 'VARCHAR(32)',
             #     'authToken': 'VARCHAR(32)',
             #     'status': 'INT(1)',
