@@ -69,13 +69,13 @@ class ConnectionManager:
     def __init__(self):
         self.active_connections: List[(WebSocket, str)] = []
 
-    async def connect(self, websocket: WebSocket, user_id: str, group_id: str):
+    async def connect(self, websocket: WebSocket, user_id: str):
         await websocket.accept()
         self.active_connections.append((websocket, user_id))
 #       when connect to websocket
 #       get old chat message
 #         res = await chat.getChatMessage(group_id)
-        await websocket.send_json(json.dumps({"data": "大家好~歡迎加入本聊天室"}, default=str))
+        await websocket.send_json(json.dumps({"message": "大家好~歡迎加入本聊天室"}, default=str))
 
     def disconnect(self, websocket: WebSocket, user_id: str):
         self.active_connections.remove((websocket, user_id))
@@ -100,19 +100,13 @@ manager = ConnectionManager()
 async def get():
     return HTMLResponse(html)
 
-@app.get("/chatCheck")
-async def chatCheck(user_id: str = '001', target_id: str = '00'):
 
-    res = chat.getChatGroups(user_id, target_id)
-
-    return json.dumps({'data': res}, default=str)
-
-@app.websocket("/ws/{user_id}/{group_id}")
-async def websocket_endpoint(websocket: WebSocket, user_id: str, group_id: str):
-    await manager.connect(websocket, user_id, group_id)
+@app.websocket("/ws/{user_id}")
+async def websocket_endpoint(websocket: WebSocket, user_id: str):
+    await manager.connect(websocket, user_id)
     try:
         while True:
             data = await websocket.receive_json()
-            await manager.send_private_message(f"客戶 #{user_id} says: {data['data']}", data['targetID'])
+            await manager.send_private_message(f"客戶 #{user_id} says: {data['message']}", data['receiver_id'])
     except WebSocketDisconnect:
         manager.disconnect(websocket, user_id)
