@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Path, Body, Query, Request, BackgroundTasks, Header, Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 
 from typing import Union, Set, List
 from modules.CRUD import SQL
@@ -14,14 +15,27 @@ from slowapi.errors import RateLimitExceeded
 limiter = Limiter(key_func=get_remote_address)
 
 app = FastAPI()
+# Router
 app.include_router(routers.router)
+# Middle
 app.add_middleware(MyMiddleware, some_attribute="some_attribute_here_if_needed")
-# limit
+# limit api
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
-
+# login token
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="member/token")
-
+# cors
+origins = [
+    'https://cdpn.io'
+    # "http://localhost",
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #啟動mysql
 @app.on_event("startup")

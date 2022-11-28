@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Union
 from modules.TOOLS import payload_
-from fastapi import Depends, APIRouter, HTTPException, status
+from fastapi import Depends, APIRouter, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -88,7 +88,7 @@ def create_access_token(data: dict, expires_delta: Union[timedelta, None] = None
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(request: Request, token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -97,7 +97,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-
+        if payload.get('host') != request.client.host:
+            raise credentials_exception
         if username is None:
             raise credentials_exception
         token_data = TokenData(username=username)
@@ -116,7 +117,7 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
 
 
 @router.post("/token", response_model=Token, tags=['MEMBER'], summary="登入取得token")
-async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
 
     if not user:
@@ -127,7 +128,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         )
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
-        data={"sub": user.username, 'scope': user.scope}, expires_delta=access_token_expires
+        data={"sub": user.username, 'scope': user.scope, 'host': request.client.host}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
 

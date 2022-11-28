@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
 from routes import api, upload, line, \
     payment, email, sms, logistic, \
-    member
+    member, websocket
 from modules.TOOLS import parse_params_to_sql
 import json
 router = APIRouter()
@@ -46,6 +46,7 @@ async def routes_permission_check(request: Request, user: dict = Depends(member.
 router.include_router(
     api.router,
     prefix="/api",
+
     dependencies=[Depends(api_record), Depends(routes_permission_check)]
 )
 
@@ -82,4 +83,9 @@ router.include_router(
 router.include_router(
     member.router,
     prefix="/member"
+)
+
+router.include_router(
+    websocket.router,
+    prefix="/ws"
 )

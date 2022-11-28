@@ -2,7 +2,8 @@ import uuid
 import hashlib
 from fastapi import Request, HTTPException, Depends, Header
 from urllib.parse import quote_plus
-from config import  settings
+from config import settings
+import html
 import uuid
 import requests
 from datetime import datetime
@@ -10,16 +11,19 @@ import collections
 import re
 
 
-
 def dict_protect_sql(params: dict) -> dict:
     regex = "(^[A-Za-z0-9_@]+$)"
+    params_ = {}
     for key, values in params.items():
-      if len(re.findall(regex, key)) == 0:
-         raise HTTPException(status_code=401, detail='參數錯誤!')
-      elif len(re.findall(regex, str(values))) == 0:
-         print('參數錯誤')
-         raise HTTPException(status_code=401, detail='參數錯誤!')
-    return params
+        params_[key] = str(html.escape(values.replace("'", '"').replace("-", '_').replace(";", ':')))
+        if len(re.findall(regex, key)) == 0:
+            raise HTTPException(status_code=401, detail='參數錯誤!')
+        if key == values:
+            raise HTTPException(status_code=401, detail='參數錯誤!')
+      # elif len(re.findall(regex, str(values))) == 0:
+      #    print('參數錯誤')
+      #    raise HTTPException(status_code=401, detail='參數錯誤!')
+    return params_
 
 
 # dict ->dict
