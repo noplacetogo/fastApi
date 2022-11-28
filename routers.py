@@ -47,7 +47,7 @@ router.include_router(
     api.router,
     prefix="/api",
 
-    dependencies=[Depends(api_record), Depends(routes_permission_check)]
+    # dependencies=[Depends(api_record), Depends(routes_permission_check)]
 )
 
 router.include_router(
